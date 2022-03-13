@@ -1,0 +1,99 @@
+type User 
+@model  
+@key(name: "byUser", fields: ["id"]) {
+  id: ID!
+  username:String!
+  name: String!
+  email: String!
+  image: String
+  posts: [Post] @connection(keyName: "byUser", fields: ["id"])
+  mainGym: String
+  mainSport: String
+  level: String
+  chatRoomUser: [ChatRoomUser] @connection(keyName: "byUser", fields: ["id"])
+  followInfo: Follow @connection(fields: ["followInfoID"])
+  followInfoID: ID!
+}
+
+type Post 
+  @model 
+  @key(name: "byUser", fields: ["userID"]) {
+  id: ID!
+  content: String!
+  userID: ID!
+  user: User @connection(fields: ["userID"])
+  image: String
+  likes: [Like] @connection(keyName: "byPost", fields: ["id"])
+  comments: [Comment] @connection(keyName: "byPost", fields: ["id"])
+}
+
+type Comment 
+  @model 
+  @key(name: "byPost", fields: ["postID", "content"],queryField: "commentsByPost")
+  @key(name: "byUser", fields: ["userID", "postID"]) {
+  id: ID!
+  userID: ID!
+  user: User @connection(fields: ["userID"])
+  postID: ID!
+  post: Post! @connection(fields: ["postID"])
+  content: String!
+}
+
+type Like
+  @model(queries:null)
+  @key(name: "byUser", fields: ["userID", "postID"])
+  @key(name: "byPost", fields: ["postID", "userID"]) {
+  id: ID!
+  userID: ID!
+  postID: ID!
+  user: User! @connection(fields: ["userID"])
+  post: Post! @connection(fields: ["postID"])
+}
+
+type ChatRoomUser
+  @model
+  @key(name: "byUser", fields: ["userID", "chatRoomID"])
+  @key(name: "byChatRoom", fields: ["chatRoomID", "userID"]) {
+  id: ID!
+  userID: ID!
+  chatRoomID: ID!
+  user: User @connection(fields: ["userID"])
+  chatRoom: ChatRoom @connection(fields: ["chatRoomID"])
+}
+
+type ChatRoom 
+  @model {
+  id: ID!
+  chatRoomUsers: [ChatRoomUser] @connection(keyName: "byChatRoom", fields: ["id"])
+  messages: [Message]  @connection(keyName: "byChatRoom", fields: ["id"])
+  lastMessageID: ID!
+  lastMessage: Message @connection(fields: ["lastMessageID"])
+}
+
+type Message
+@model
+@key(
+  name: "byChatRoom",
+  fields: ["chatRoomID", "createdAt"],
+  queryField: "messagesByChatRoom") {
+  id: ID!
+  createdAt: String!
+  content: String!
+  userID: ID!
+  chatRoomID: ID!
+  user: User @connection(fields: ["userID"])
+  chatRoom: ChatRoom @connection(fields: ["chatRoomID"])
+  postID: ID
+  post: Post @connection(fields: ["postID"])
+}
+
+type Follow
+  @model 
+  @key(name: "byUser", fields: ["userID"]){
+  id: ID!
+  userID: ID!
+  user: User @connection(fields: ["userID"])
+  followed:[User] 
+  followers:[User]
+
+}
